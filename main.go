@@ -15,12 +15,13 @@ import (
 )
 
 type options struct {
-	httpServerAddress      string
-	httpServerPort         int
-	httpServerWriteTimeout time.Duration
-	httpServerReadTimeout  time.Duration
-	httpResponseCode       int
-	httpResponseBody       string
+	httpServerAddress       string
+	httpServerPort          int
+	httpServerWriteTimeout  time.Duration
+	httpServerReadTimeout   time.Duration
+	httpResponseCode        int
+	httpResponseContentType string
+	httpResponseBody        string
 }
 
 var flags options
@@ -36,18 +37,19 @@ func init() {
 		flag.PrintDefaults()
 	}
 
-	flag.StringVar(&flags.httpServerAddress, "http-server-address", "127.0.0.1", "Address for the http server to bind to.")
+	flag.StringVar(&flags.httpServerAddress, "http-server-address", "127.0.0.1", "Address for the HTTP server to bind to.")
 	flag.IntVar(&flags.httpServerPort, "http-server-port", 8000, "Port for the http server to bind to.")
-	flag.DurationVar(&flags.httpServerReadTimeout, "http-server-read-timeout", 5*time.Second, "Read timeout for the http server.")
-	flag.DurationVar(&flags.httpServerWriteTimeout, "http-server-write-timeout", 5*time.Second, "Write timeout for the http server.")
-	flag.IntVar(&flags.httpResponseCode, "http-response-code", 200, "Http response code returned.")
-	flag.StringVar(&flags.httpResponseBody, "http-response-body", "OK", "Http response body returned.")
+	flag.DurationVar(&flags.httpServerReadTimeout, "http-server-read-timeout", 2*time.Second, "Read timeout for the HTTP server.")
+	flag.DurationVar(&flags.httpServerWriteTimeout, "http-server-write-timeout", 2*time.Second, "Write timeout for the HTTP server.")
+	flag.IntVar(&flags.httpResponseCode, "http-response-code", 200, "HTTP response code returned.")
+	flag.StringVar(&flags.httpResponseContentType, "http-response-header-content-type", "text/plain", "HTTP response Content-Type header.")
+	flag.StringVar(&flags.httpResponseBody, "http-response-body", "OK", "HTTP response body returned.")
 	flag.Parse()
 }
 
 func main() {
 	r := mux.NewRouter()
-	r.HandleFunc("/", handler.NewSimpleHandler(flags.httpResponseCode, []byte(flags.httpResponseBody)))
+	r.HandleFunc("/", handler.NewSimpleHandler(flags.httpResponseCode, flags.httpResponseContentType, []byte(flags.httpResponseBody)))
 	http.Handle("/", r)
 
 	srv := &http.Server{
